@@ -1,0 +1,8 @@
+<div class="left-nav-exercises-bar" [ngStyle]="{'height': '100px', 'overflow-y': 'auto'}">
+    <h3>Exercises</h3>
+    <div *ngFor="let exercise of exerciseList|orderBy:'title'">
+        <button class="btn col-sm-10" (click)="addExercise(exercise)">
+            {{exercise.title}} <span class="ion-ios-arrow-forward"></span>
+        </button>
+    </div>
+</div>
