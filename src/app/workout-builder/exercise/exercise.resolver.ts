@@ -2,6 +2,8 @@ import { Resolve, Router, ActivatedRouteSnapshot, RouterStateSnapshot } from '@a
 import { Injectable } from '@angular/core';
 import { Exercise } from '../../core/model';
 import { ExerciseBuilderService } from '../builder-services/exercise-builder.service';
+import { Observable, of } from 'rxjs';
+import { map, catchError } from 'rxjs/operators';
 
 @Injectable()
 export class ExerciseResolver implements Resolve<Exercise> {
@@ -14,22 +16,30 @@ export class ExerciseResolver implements Resolve<Exercise> {
 
     resolve(
         route: ActivatedRouteSnapshot,
-        state: RouterStateSnapshot
-    ): Exercise {
-        let exerciseName = route.paramMap.get('id');
+        state: RouterStateSnapshot): Observable<Exercise> {
+        const exerciseName = route.paramMap.get('id');
 
         if (!exerciseName) {
-            exerciseName = '';
-        }
-
-        this.exercise = this.exerciseBuilderService.startBuilding(exerciseName);
-
-        if (this.exercise) {
-            return this.exercise;
+            return of(this.exerciseBuilderService.startBuildingNew());
         } else {
-            // workoutName not found
-            this.router.navigate(['/builder/exercises']);
-            return null;
+            return this.exerciseBuilderService.startBuildingExisting(exerciseName)
+                .pipe(
+                    map(exercise => {
+                        if (exercise) {
+                            this.exerciseBuilderService.buildingExercise = exercise;
+                            this.exerciseBuilderService.initialExerciseName = exerciseName;
+                            return exercise;
+                        } else {
+                            this.router.navigate(['/builder/exercises']);
+                            return null;
+                        }
+                    }),
+                    catchError(error => {
+                        console.log('An error occurred!');
+                        this.router.navigate(['/builder/exercises']);
+                        return of(null);
+                    })
+                );
         }
     }
 }

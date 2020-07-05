@@ -1,13 +1,14 @@
-import { map } from 'rxjs/operators';
+import { map, catchError } from 'rxjs/operators';
 import { take } from 'rxjs/operators';
 import { Injectable } from '@angular/core';
-import { Observable, from } from 'rxjs';
+import { Observable, of } from 'rxjs';
 import {
     Router, Resolve, RouterStateSnapshot,
     ActivatedRouteSnapshot
 } from '@angular/router';
 import { WorkoutPlan } from '../../core/model';
 import { WorkoutBuilderService } from '../builder-services/workout-builder.service';
+import { environment } from '../../../environments/environment';
 
 @Injectable()
 export class WorkoutResolver implements Resolve<WorkoutPlan> {
@@ -20,22 +21,31 @@ export class WorkoutResolver implements Resolve<WorkoutPlan> {
 
     resolve(
         route: ActivatedRouteSnapshot,
-        state: RouterStateSnapshot
-    ): WorkoutPlan {
-        let workoutName = route.paramMap.get('id');
+        state: RouterStateSnapshot): Observable<WorkoutPlan> {
+        const workoutName = route.paramMap.get('id');
 
         if (!workoutName) {
-            workoutName = '';
-        }
-
-        this.workout = this.workoutBuilderService.startBuilding(workoutName);
-
-        if (this.workout) {
-            return this.workout;
+            return of(this.workoutBuilderService.startBuildingNew());
         } else {
-            // workoutName not 
-            this.router.navigate(['/builder/workouts']);
-            return null;
+            return this.workoutBuilderService.startBuildingExisting(workoutName)
+                .pipe(
+                    map(workout => {
+                        if (workout) {
+
+                            this.workoutBuilderService.buildingWorkout = workout;
+                            this.workoutBuilderService.initialWorkoutPlanName = workoutName;
+                            return workout;
+                        } else {
+                            this.router.navigate(['/builder/workouts']);
+                            return null;
+                        }
+                    }),
+                    catchError(error => {
+                        console.log('An error occurred!');
+                        this.router.navigate(['/builder/workouts']);
+                        return of(null);
+                    })
+                );
         }
     }
 }

@@ -67,9 +67,19 @@ export class WorkoutComponent implements OnInit, OnDestroy {
 
   save(formWorkout: any) {
     this.submitted = true;
-    if (!formWorkout.valid) return;
-    this.workoutBuilderService.save();
-    this.router.navigate(['/builder/workouts']);
+    if (!formWorkout.valid) { return; }
+    this.workoutBuilderService.save().subscribe(
+      success => this.router.navigate(['/builder/workouts']),
+      err => console.error(err)
+    );
+
+  }
+
+  delete() {
+    this.workoutBuilderService.delete().subscribe(
+      success => this.router.navigate(['/builder/workouts']),
+      err => console.error(err)
+    )
   }
 
   ngOnDestroy() {

@@ -19,7 +19,7 @@
                             <div class="index"><span> {{i +1}} </span></div>
                             <div class="main">
                                 <div class="image">
-                                    <img [src]="exercisePlan.exercise.image? '/assets/images/' + exercisePlan.exercise.image: '/static/images/' + 'running.png'"
+                                    <img [src]="exercisePlan.exercise.image? exercisePlan.exercise.image: '/assets/images/' + 'running.png'"
                                         alt="">
                                 </div>
                                 <div class="details">
@@ -104,11 +104,12 @@
                         class="alert alert-danger extended-validation-message">The workout should have at least one
                         exercise!</label>
                     <div class="row">
-                        <button class="btn btn-warning">Save</button>
+                        <button class="btn btn-warning mr-3">Save</button>
+                        <!-- <button (click)="delete()" class="btn btn-danger">Delete</button> -->
                     </div>
                 </div>
             </form>
-            <pre> {{f.value | json}} </pre>
+            <!-- <pre> {{f.value | json}} </pre> -->
         </div>
     </div>
 </div>

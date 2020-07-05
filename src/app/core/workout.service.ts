@@ -1,6 +1,10 @@
 import { Injectable } from '@angular/core';
 import { ExercisePlan, WorkoutPlan, Exercise } from './model';
 import { CoreModule } from './core.module';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { Observable, of, throwError, forkJoin } from 'rxjs';
+import { catchError, map, } from 'rxjs/operators';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: CoreModule
@@ -9,73 +13,202 @@ export class WorkoutService {
   workouts: Array<WorkoutPlan> = [];
   exercises: Array<Exercise> = [];
 
-  constructor() {
+  constructor(public http: HttpClient) {
     this.setupInitialExercises();
     this.setupInitialWorkouts();
   }
 
 
-  getExercises() {
-    return this.exercises;
+  getExercises(): Observable<Exercise[]> {
+    return this.http.get<Exercise[]>(
+      `${environment.baseURL}${environment.exerciseList}`)
+      .pipe(
+        map((exerciseList: Array<any>) => {
+          const result: Array<Exercise> = [];
+          if (exerciseList) {
+            exerciseList.forEach((exercise) => {
+              result.push(
+                new Exercise(
+                  exercise.name,
+                  exercise.title,
+                  exercise.description,
+                  `${environment.mediaBaseURL}${exercise.image}`,
+                  `${environment.mediaBaseURL}${exercise.name_sound}`,
+                  exercise.procedure,
+                  exercise.videos
+                )
+              )
+            })
+          }
+          return result
+        })
+        , catchError(this.handleError('getExercises', [])));
   }
 
-  getExercise(exerciseName: string) {
-    for (const exercise of this.exercises) {
-      if (exercise.name === exerciseName) { return exercise; }
-    }
+
+
+  getExercise(exerciseName: string): Observable<Exercise> {
+    return this.http.get<Exercise>(`${environment.baseURL}${environment.retrieveUpdateDestroyExercise}${exerciseName}/`)
+      .pipe(
+        map((exerciseDetail) => {
+          const result: Exercise = new Exercise(
+            exerciseDetail['name'],
+            exerciseDetail['title'],
+            exerciseDetail['description'],
+            `${environment.mediaBaseURL}${exerciseDetail['image']}`,
+            `${environment.mediaBaseURL}${exerciseDetail['name_sound']}`,
+            exerciseDetail['procedure'],
+            exerciseDetail['videos']
+          );
+
+          return result;
+        }),
+        catchError(this.handleError<Exercise>(`getExercise id=${exerciseName}`))
+      );
   }
 
-  updateExercise(exercise: Exercise) {
-    for (let i = 0; i < this.exercises.length; i++) {
-      if (this.exercises[i].name === exercise.name) {
-        this.exercises[i] = exercise;
-      }
-    }
-    return exercise;
+  updateExercise(initialExerciseName, exercise: Exercise) {
+    console.log('Exercise', exercise)
+    return this.http.put(`${environment.baseURL}${environment.retrieveUpdateDestroyExercise}${initialExerciseName}/`, exercise)
+      .pipe(
+        catchError(this.handleError<Exercise>()));
   }
 
   addExercise(exercise: Exercise) {
-    if (exercise.name) {
-      this.exercises.push(exercise);
-      return exercise;
-    }
+    return this.http.post(`${environment.baseURL}${environment.createExercise}`, exercise)
+      .pipe(
+        catchError(this.handleError<Exercise>())
+      )
   }
 
   deleteExercise(exerciseName: string) {
-    let exerciseIndex: number;
-    for (let i = 0; i < this.exercises.length; i++) {
-      if (this.exercises[i].name === exerciseName) {
-        exerciseIndex = i;
-      }
-    }
-    if (exerciseIndex >= 0) { this.exercises.splice(exerciseIndex, 1); }
+    return this.http.delete(`${environment.baseURL}${environment.retrieveUpdateDestroyExercise}${exerciseName}/`)
+      .pipe(catchError(this.handleError<Exercise>()))
   }
 
   getWorkouts() {
-    return this.workouts;
+    return this.http.get<WorkoutPlan[]>(
+      `${environment.baseURL}${environment.workoutPlanList}`)
+      .pipe(map((workouts: Array<any>) => {
+        const result: Array<WorkoutPlan> = [];
+        if (workouts) {
+          workouts.forEach((workout) => {
+            result.push(
+              new WorkoutPlan(
+                workout.name,
+                workout.title,
+                workout.rest_between_exercise,
+                workout.exercises,
+                workout.description
+              ));
+          });
+        }
+        return result;
+      }),
+        catchError(this.handleError<WorkoutPlan[]>('getWorkouts', [])));
   }
 
-  getWorkout(name: string) {
-    for (const workout of this.workouts) {
-      if (workout.name === name) { return workout; }
-    }
-    return null;
+  getWorkout(workoutName: string) {
+    return forkJoin(
+      this.http.get(`${environment.baseURL}${environment.exerciseList}`),
+      this.http.get(`${environment.baseURL}${environment.workoutPlanList}`))
+      .pipe(
+        map(
+          (data: any) => {
+            const allExercises = data[0];
+            const rawWorkout = data[1].find((item) => item.name === workoutName);
+            if (rawWorkout) {
+              const workout = new WorkoutPlan(
+                rawWorkout.name,
+                rawWorkout.title,
+                rawWorkout.rest_between_exercise,
+                rawWorkout.exercises,
+                rawWorkout.description
+              );
+
+
+              workout.exercises.forEach(
+                (exercisePlan) => {
+                  exercisePlan.exercise = allExercises.find(
+                    (x) => x.name === exercisePlan.exercise.name);
+                  exercisePlan.exercise.image = `${environment.mediaBaseURL}${exercisePlan.exercise.image}`;
+                  if (exercisePlan.exercise.nameSound) {
+                    exercisePlan.exercise.nameSound = `${environment.mediaBaseURL}${exercisePlan.exercise.image}`;
+                  }
+                }
+              );
+              return workout;
+            }
+          }), catchError(this.handleError<WorkoutPlan>(`getWorkout id=${workoutName}`))
+      );
+  }
+
+  private handleError<T>(operation = 'operation', result?: T) {
+    return (error: HttpErrorResponse): Observable<T> => {
+      if (error.status === 404) {
+        console.log('HTTP 404 Not found error');
+        return of(result as T);
+      } else {
+        console.error(error);
+        return throwError('An error occurred:', error.error.message);
+      }
+    };
   }
 
   addWorkout(workout: WorkoutPlan) {
-    if (workout.name) {
-      this.workouts.push(workout);
-      return workout;
+    const workoutExercises: any = [];
+    workout.exercises.forEach(
+      (exercisePlan: any) => {
+        workoutExercises.push({
+          name: exercisePlan.exercise.name,
+          duration: exercisePlan.duration
+        })
+      }
+    );
+
+    const body = {
+      exercises: workoutExercises,
+      name: workout.name,
+      title: workout.title,
+      description: workout.description,
+      restBetweenExercise: workout.restBetweenExercise
     }
+
+
+    return this.http.post(`${environment.baseURL}${environment.createWorkoutPlan}`, body)
+      .pipe(
+        catchError(this.handleError<WorkoutPlan>())
+      );
   }
 
-  updateWorkout(workout: WorkoutPlan) {
-    for (var i = 0; i < this.workouts.length; i++) {
-      if (this.workouts[i].name === workout.name) {
-        this.workouts[i] = workout;
-        break;
+  updateWorkout(initialWorkoutPlanName, workout: WorkoutPlan) {
+    const workoutExercises: any = [];
+    workout.exercises.forEach(
+      (exercisePlan: any) => {
+        workoutExercises.push({
+          name: exercisePlan.exercise.name,
+          duration: exercisePlan.duration
+        })
       }
+    );
+
+    const body = {
+      exercises: workoutExercises,
+      name: workout.name,
+      title: workout.title,
+      description: workout.description,
+      restBetweenExercise: workout.restBetweenExercise
     }
+
+    return this.http.put(`${environment.baseURL}${environment.retrieveUpdateDestroyWorkoutPlanDetail}${initialWorkoutPlanName}/`, body)
+      .pipe(
+        catchError(this.handleError<WorkoutPlan>())
+      );
+  }
+
+  deleteWorkout(workoutName: string) {
+    return this.http.delete(`${environment.baseURL}${environment.retrieveUpdateDestroyWorkoutPlanDetail}${workoutName}/`)
+      .pipe(catchError(this.handleError<WorkoutPlan>()))
   }
 
   setupInitialExercises() {

@@ -3,7 +3,10 @@ import { Validators, FormArray, FormGroup, FormControl, FormBuilder } from '@ang
 import { ActivatedRoute, Router } from '@angular/router';
 import { Exercise } from '../../core/model';
 import { ExerciseBuilderService } from '../builder-services/exercise-builder.service';
-import { AlphaNumericValidator } from '../alphanumeric-validator';
+import { AlphaNumericValidator } from '../custom_validators/alphanumeric-validator';
+import { ImageExtensionValidator } from '../custom_validators/image-extension-validator';
+import { URLCheckerWithOrWithoutHttpHttps } from '../custom_validators/url-checker-with-or-without-http-or-https';
+import { WorkoutService } from '../../core/workout.service';
 
 @Component({
   selector: 'abe-exercise',
@@ -24,7 +27,8 @@ export class ExerciseComponent implements OnInit, OnDestroy {
     public route: ActivatedRoute,
     public router: Router,
     public exerciseBuilderService: ExerciseBuilderService,
-    public formBuilder: FormBuilder
+    public formBuilder: FormBuilder,
+    public workoutService: WorkoutService,
   ) { }
 
   ngOnInit(): void {
@@ -48,7 +52,15 @@ export class ExerciseComponent implements OnInit, OnDestroy {
       ],
       'title': [this.exercise.title, Validators.required],
       'description': [this.exercise.description, Validators.required],
-      'image': [this.exercise.image, Validators.required],
+      'image': [this.exercise.image,
+      {
+        updateOn: 'blur',
+        validators: [
+          Validators.required,
+          ImageExtensionValidator.invalidImageExtension,
+        ]
+      }
+      ],
       'nameSound': [this.exercise.nameSound],
       'procedure': [this.exercise.procedure],
       'videos': this.addVideoArray()
@@ -68,13 +80,20 @@ export class ExerciseComponent implements OnInit, OnDestroy {
     this.submitted = true;
     if (!formExercise.valid) { return; }
     this.mapFormValues(formExercise);
-    this.exerciseBuilderService.save();
-    this.router.navigate(['/builder/exercises']);
+    console.log('Exercise mapped', this.exercise)
+    this.exerciseBuilderService.save().subscribe(
+      success => this.router.navigate(['/builder/exercises']),
+      err => console.error(err)
+    );
+
   }
 
   delete() {
-    this.exerciseBuilderService.delete();
-    this.router.navigate(['/builder/exercises']);
+    this.exerciseBuilderService.delete().subscribe(
+      success => this.router.navigate(['/builder/exercises']),
+      err => console.error(err)
+    );
+
   }
 
   addVideo() {

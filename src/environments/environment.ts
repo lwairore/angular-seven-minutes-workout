@@ -3,7 +3,17 @@
 // The list of file replacements can be found in `angular.json`.
 
 export const environment = {
-  production: false
+  production: false,
+  baseURL: `http://0.0.0.0:8000/`,
+  mediaBaseURL: `http://0.0.0.0:8000`,
+  exerciseList: `exercises/`,
+  createExercise: `create-exercise/`,
+  // exerciseDetail: `exercise/`,
+  retrieveUpdateDestroyExercise: `exercise/`,
+  workoutPlanList: `workout-plans/`,
+  createWorkoutPlan: `create-workout-plan/`,
+  workoutPlanDetail: `workout-plan/`,
+  retrieveUpdateDestroyWorkoutPlanDetail: `workout-plan/`
 };
 
 /*

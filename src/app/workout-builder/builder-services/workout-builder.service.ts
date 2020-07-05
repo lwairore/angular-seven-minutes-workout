@@ -7,18 +7,19 @@ export class WorkoutBuilderService {
   buildingWorkout: WorkoutPlan;
   newWorkout: boolean;
   firstExercise = true;
+  initialWorkoutPlanName: string;
 
   constructor(public _workoutService: WorkoutService) { }
 
-  startBuilding(name: string) {
-    if (name) {
-      this.buildingWorkout = this._workoutService.getWorkout(name);
-      this.newWorkout = false;
-    } else {
-      this.buildingWorkout = new WorkoutPlan('', '', 30, []);
-      this.newWorkout = true;
-    }
+  startBuildingNew() {
+    const exerciseArray: ExercisePlan[] = [];
+    this.buildingWorkout = new WorkoutPlan('', '', 30, exerciseArray);
+    this.newWorkout = true;
     return this.buildingWorkout;
+  }
+  startBuildingExisting(name: string) {
+    this.newWorkout = false;
+    return this._workoutService.getWorkout(name);
   }
 
   removeExercise(exercise: ExercisePlan) {
@@ -31,9 +32,13 @@ export class WorkoutBuilderService {
   save() {
     let workout = this.newWorkout ?
       this._workoutService.addWorkout(this.buildingWorkout) :
-      this._workoutService.updateWorkout(this.buildingWorkout);
+      this._workoutService.updateWorkout(this.initialWorkoutPlanName, this.buildingWorkout);
     this.newWorkout = false;
     return workout;
+  }
+
+  delete() {
+    return this._workoutService.deleteWorkout(this.buildingWorkout.name);
   }
 
   addExercise(exercisePlan: ExercisePlan) {

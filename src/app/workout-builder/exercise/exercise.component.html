@@ -42,18 +42,31 @@
                 <label for="name-audio">Exercise Audio:</label>
                 <input type="text" formControlName="nameSound" class="form-control" id="name-audio"
                     placeholder="Enter location\url where audio clue for the exercise is stored." />
+                <!-- <label
+                    *ngIf="exerciseForm.controls['nameSound'].hasError('invalidAudioExtension') && (exerciseForm.controls['nameSound'].touched || submitted)"
+                    class="alert alert-danger validation-message">The nameSound extension is not supported</label>
+                <br>
+                <label
+                    *ngIf="exerciseForm.controls['nameSound'].hasError('invalidURL') && (exerciseForm.controls['nameSound'].touched || submitted)"
+                    class="alert alert-danger validation-message">The nameSound URL is invalid</label> -->
             </div>
         </div>
         <div class="col-sm-4 exercise-video">
             <div class="form-group">
                 <img id="img-preview" class="img-preview"
-                    [src]="exerciseForm.controls['image'].value? '/assets/images/' + exerciseForm.controls['image'].value: '/assets/images/' + 'running.png'" /><br />
+                    [src]="exerciseForm.controls['image'].value?  exerciseForm.controls['image'].value: '/assets/images/' + 'running.png'" /><br />
                 <label for="exercise-image">Exercise Image (Will be scaled to: 540 X 360 px):</label>
                 <input type="text" formControlName="image" class="form-control" id="exercise-image"
                     placeholder="Enter exercise image url.">
                 <label
                     *ngIf="exerciseForm.controls['image'].hasError('required') && (exerciseForm.controls['image'].touched || submitted)"
                     class="alert alert-danger validation-message">Image url is required</label>
+                <br>
+                <label
+                    *ngIf="exerciseForm.controls['image'].hasError('invalidImageExtension') && (exerciseForm.controls['image'].touched || submitted)"
+                    class="alert alert-danger validation-message">The image extension is not supported</label>
+                <br>
+
             </div>
             <div class="form-group" formArrayName="videos">
                 <label>Videos:</label>
@@ -75,7 +88,8 @@
                 <button type="button" (click)="addVideo()" class="btn btn-primary">Add Video</button>
             </div>
             <div class="form-group">
-                <button type="submit" class="btn btn-warning">Save</button>
+                <button type="submit" class="btn btn-warning mr-3">Save</button>
+                <!-- <button (click)="delete()" class="btn btn-danger">Delete</button> -->
             </div>
         </div>
     </form>

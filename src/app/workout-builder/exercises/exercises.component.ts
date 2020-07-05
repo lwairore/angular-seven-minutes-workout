@@ -19,7 +19,11 @@ export class ExercisesComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    this.exerciseList = this.workoutService.getExercises();
+    this.workoutService.getExercises()
+      .subscribe(
+        exercises => this.exerciseList = exercises,
+        (err: any) => console.error
+      )
   }
   onSelect(exercise: Exercise) {
     this.router.navigate(['./builder/exercise', exercise.name]);
