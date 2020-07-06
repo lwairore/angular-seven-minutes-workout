@@ -1,4 +1,4 @@
-<abe-workout-runner (exercisePaused)="wa.stop()" (exerciseResumed)="wa.resume()"
+<abe-workout-runner [workoutName]="workoutName" (exercisePaused)="wa.stop()" (exerciseResumed)="wa.resume()"
     (exerciseProgress)="wa.onExerciseProgress($event)" (exerciseChanged)="wa.onExerciseChanged($event)"
     (workoutComplete)="wa.stop()" (workoutStarted)="wa.resume()">
 </abe-workout-runner>

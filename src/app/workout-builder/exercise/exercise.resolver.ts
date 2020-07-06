@@ -36,7 +36,7 @@ export class ExerciseResolver implements Resolve<Exercise> {
                     }),
                     catchError(error => {
                         console.log('An error occurred!');
-                        this.router.navigate(['/builder/exercises']);
+                        this.router.navigate(['/builder/exercises/exercise-not-found']);
                         return of(null);
                     })
                 );

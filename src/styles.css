@@ -413,6 +413,10 @@ body {
     margin-left: 5px;
 }
 
+.label-as-badge {
+    border-radius: 1em;
+}
+
 .not-found-msgbox {
     margin-bottom: 20px;
     width: 300px;

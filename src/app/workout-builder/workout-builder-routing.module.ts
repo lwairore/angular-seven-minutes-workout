@@ -14,10 +14,12 @@ const routes: Routes = [
         component: WorkoutBuilderComponent,
         children: [
             { path: '', pathMatch: 'full', redirectTo: 'workouts' },
+            { path: 'workouts/workout-not-found', component: WorkoutsComponent },
             { path: 'workouts', component: WorkoutsComponent },
             { path: 'workout/new', component: WorkoutComponent, resolve: { workout: WorkoutResolver } },
             { path: 'workout/:id', component: WorkoutComponent, resolve: { workout: WorkoutResolver } },
             { path: 'exercises', component: ExercisesComponent },
+            { path: 'exercises/exercise-not-found', component: ExercisesComponent },
             { path: 'exercise/new', component: ExerciseComponent, resolve: { exercise: ExerciseResolver } },
             { path: 'exercise/:id', component: ExerciseComponent, resolve: { exercise: ExerciseResolver } }
         ]

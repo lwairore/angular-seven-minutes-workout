@@ -1,4 +1,5 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
   selector: 'abe-workout-container',
@@ -6,11 +7,22 @@ import { Component, OnInit } from '@angular/core';
   styles: [
   ]
 })
-export class WorkoutContainerComponent implements OnInit {
+export class WorkoutContainerComponent implements OnInit, OnDestroy {
+  public workoutName: string;
+  public sub: any;
 
-  constructor() { }
+  constructor(private route: ActivatedRoute,
+    private router: Router) { }
 
   ngOnInit(): void {
+    this.sub = this.route.params.subscribe(params => {
+      this.workoutName = params['id'];
+    })
+
+  }
+
+  ngOnDestroy() {
+    this.sub.unsubscribe();
   }
 
 

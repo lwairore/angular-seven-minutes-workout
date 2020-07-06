@@ -4,7 +4,7 @@
     </div>
     <div class="col-sm-10 builder-content">
         <h1 class="text-center">Exercises</h1>
-
+        <div *ngIf="notFound" class="not-found-msgbox">Could not load the specific exercise!</div>
         <div *ngFor="let exercise of exerciseList|orderBy:'title'" class="exercise-tile" (click)="onSelect(exercise)">
             <div class="title"> {{exercise.title}} </div>
         </div>

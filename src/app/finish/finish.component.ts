@@ -1,4 +1,5 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
   selector: 'abe-finish',
@@ -6,11 +7,22 @@ import { Component, OnInit } from '@angular/core';
   styles: [
   ]
 })
-export class FinishComponent implements OnInit {
+export class FinishComponent implements OnInit, OnDestroy {
+  public workoutName: string;
+  private sub: any;
 
-  constructor() { }
+  constructor(
+    private route: ActivatedRoute,
+  ) { }
 
   ngOnInit(): void {
+    this.sub = this.route.params.subscribe(params => {
+      this.workoutName = params['id'];
+    })
+  }
+
+  ngOnDestroy() {
+    this.sub.unsubscribe();
   }
 
 }

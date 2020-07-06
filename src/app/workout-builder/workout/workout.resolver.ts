@@ -36,7 +36,7 @@ export class WorkoutResolver implements Resolve<WorkoutPlan> {
                             this.workoutBuilderService.initialWorkoutPlanName = workoutName;
                             return workout;
                         } else {
-                            this.router.navigate(['/builder/workouts']);
+                            this.router.navigate(['/builder/workouts/workout-not-found']);
                             return null;
                         }
                     }),
